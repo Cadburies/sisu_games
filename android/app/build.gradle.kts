@@ -8,7 +8,7 @@ plugins {
 android {
     namespace = "com.example.sisu_games"
     compileSdk = flutter.compileSdkVersion
-    ndkVersion = flutter.ndkVersion
+    ndkVersion = "27.0.12077973" // Explicitly set for network_info_plus
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
