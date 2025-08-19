@@ -3,15 +3,14 @@ import 'package:flutter/services.dart'; // For SystemChrome
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'common/opening_screen.dart';
 import 'common/theme.dart';
-import 'backgammon/screen.dart';
-import 'checkers/screen.dart';
-import 'cribbage/screen.dart';
-import 'knucklebones/screen.dart';
-import 'liars_dice/screen.dart';
-import 'poker/screen.dart';
-import 'solitaire/screen.dart';
-import 'uno/screen.dart';
-import 'yatzy/screen.dart';
+import 'games/backgammon/screen.dart';
+import 'games/checkers/screen.dart';
+import 'games/cribbage/screen.dart';
+import 'games/liars_dice/screen.dart';
+import 'games/poker/screen.dart';
+import 'games/solitaire/screen.dart';
+import 'games/uno/screen.dart';
+import 'games/yatzy/screen.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -41,7 +40,6 @@ class MyApp extends StatelessWidget {
         '/backgammon': (context) => const BackgammonScreen(),
         '/checkers': (context) => const CheckersScreen(),
         '/cribbage': (context) => const CribbageScreen(),
-        '/knucklebones': (context) => const KnucklebonesScreen(),
         '/liars_dice': (context) => const LiarsDiceScreen(),
         '/poker': (context) => const PokerScreen(),
         '/solitaire': (context) => const SolitaireScreen(),

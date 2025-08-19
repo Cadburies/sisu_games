@@ -68,12 +68,6 @@ class OpeningScreen extends ConsumerWidget {
                     ),
                     _buildGameIcon(
                       context,
-                      'Knucklebones',
-                      'assets/games/knucklebones/icon.jpg',
-                      '/knucklebones',
-                    ),
-                    _buildGameIcon(
-                      context,
                       'Liar\'s Dice',
                       'assets/games/liars_dice/icon.jpg',
                       '/liars_dice',

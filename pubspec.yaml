@@ -81,10 +81,9 @@ flutter:
     - assets/games/backgammon/icon.jpg
     - assets/games/checkers/icon.jpg
     - assets/games/cribbage/icon.jpg
-    - assets/games/knucklebones/icon.jpg
     - assets/games/uno/icon.jpg
-    - assets/games/yatzy/icon.jpg  
-    
+    - assets/games/yatzy/icon.jpg
+
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
 

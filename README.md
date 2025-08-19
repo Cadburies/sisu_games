@@ -31,7 +31,7 @@ Sisu Games is a Viking-themed multiplayer game app built with Flutter, evoking t
   - Poker: Texas Hold'em with Viking-suited cards (axes, shields, ravens, ships).
   - Liar's Dice: Bluffing with rune-etched bone dice in horn cups.
   - Solitaire: Klondike variant on a plank-wood table.
-  - More to come: Backgammon (Hnefatafl), Checkers (Viking Chess), Yatzy, Uno, Knucklebones, and Cribbage.
+  - More to come: Backgammon (Hnefatafl), Checkers (Viking Chess), Yatzy, Uno, and Cribbage.
 - **Multiplayer**: Local WiFi host-client or peer-to-peer sync using WebSockets (`web_socket_channel`) and device discovery (`multicast_dns`, `network_info_plus`). Turns pass with animated raven flights; verbal elements (e.g., bluffing) handled off-app.
 - **Single-Player**: AI opponents with rule-based decisions.
 - **Cross-Platform**: Responsive for Android and iOS; full-screen mode with system bar overlays.
