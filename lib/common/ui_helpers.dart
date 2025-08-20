@@ -1,3 +1,4 @@
+// lib/common/ui_helpers.dart
 import 'package:flutter/material.dart';
 
 /// Common reusable UI widgets across games with Viking theme.
@@ -9,45 +10,52 @@ class UIHelpers {
     required ValueChanged<T?> onChanged,
     required String hint,
     required BuildContext context,
-    Color backgroundColor = const Color(0xFF4A2C2A), // Weathered wood brown
-    Color textColor = Colors.amberAccent,
   }) {
+    final theme = Theme.of(context);
     return DropdownButton<T>(
       value: value,
       hint: Text(
         hint,
-        style: TextStyle(color: textColor, fontFamily: 'RuneFont'),
+        style: theme.textTheme.bodyMedium?.copyWith(fontSize: 16),
       ),
       items: items,
       onChanged: onChanged,
-      dropdownColor: backgroundColor,
-      style: TextStyle(color: textColor, fontFamily: 'RuneFont'),
-      iconEnabledColor: textColor,
-      underline: Container(height: 2, color: textColor),
+      dropdownColor: theme.colorScheme.secondary,
+      style: theme.textTheme.bodyMedium?.copyWith(fontSize: 16),
+      iconEnabledColor: theme.iconTheme.color,
+      underline: Container(height: 2, color: theme.iconTheme.color),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
     );
   }
 
   /// Standard player score/turn display with Viking theme
-  static Widget playerStatus(String name, int score, {bool isActive = false}) {
+  static Widget playerStatus(
+    BuildContext context,
+    String name,
+    int score, {
+    bool isActive = false,
+  }) {
+    final theme = Theme.of(context);
     return Container(
       padding: const EdgeInsets.all(8),
       decoration: BoxDecoration(
         color: isActive
-            ? Colors.blueGrey[700]?.withValues(alpha: 0.3)
-            : Colors.transparent,
+            ? theme.primaryColor.withOpacity(0.3)
+            : theme.colorScheme.surface.withOpacity(0.3),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.amber[100]!, width: 1),
+        border: Border.all(color: theme.iconTheme.color!, width: 1),
       ),
       child: Row(
         children: [
-          Icon(Icons.shield, color: isActive ? Colors.blue : Colors.grey),
+          Icon(
+            Icons.shield,
+            color: isActive ? theme.primaryColor : Colors.grey,
+          ),
           const SizedBox(width: 6),
           Text(
             "$name: $score",
-            style: TextStyle(
+            style: theme.textTheme.bodyMedium?.copyWith(
               fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
-              fontFamily: 'RuneFont',
-              color: Colors.amber[100],
             ),
           ),
         ],
@@ -56,23 +64,26 @@ class UIHelpers {
   }
 
   /// Viking-themed dice rendering for Liar’s Dice, Yatzy
-  static Widget vikingDiceFace(int value, {double size = 55}) {
+  static Widget vikingDiceFace(
+    BuildContext context,
+    int value, {
+    double size = 55,
+  }) {
+    final theme = Theme.of(context);
     return Container(
       width: size,
       height: size,
       decoration: BoxDecoration(
-        border: Border.all(color: Colors.amber[100]!, width: 2),
+        border: Border.all(color: theme.iconTheme.color!, width: 2),
         borderRadius: BorderRadius.circular(6),
-        color: Colors.brown[900],
+        color: theme.cardColor,
       ),
       alignment: Alignment.center,
       child: Text(
         value.toString(),
-        style: TextStyle(
+        style: theme.textTheme.bodyMedium?.copyWith(
           fontSize: 22,
           fontWeight: FontWeight.bold,
-          color: Colors.amber[100],
-          fontFamily: 'RuneFont',
         ),
       ),
     );
@@ -80,60 +91,59 @@ class UIHelpers {
 
   /// Card rendering for Poker/Solitaire/Uno/Cribbage with Viking theme
   static Widget cardFace(
+    BuildContext context,
     String label, {
     double width = 60,
     double height = 90,
-    Color color = const Color(0xFF3C2F2F), // Deep weathered wood
   }) {
+    final theme = Theme.of(context);
     return Container(
       width: width,
       height: height,
       decoration: BoxDecoration(
-        color: color,
-        border: Border.all(color: Colors.amber[100]!, width: 2),
+        color: theme.cardColor,
+        border: Border.all(color: theme.iconTheme.color!, width: 2),
         borderRadius: BorderRadius.circular(6),
       ),
       alignment: Alignment.center,
       child: Text(
         label,
-        style: TextStyle(
-          fontSize: 16,
-          color: Colors.amber[100],
-          fontFamily: 'RuneFont',
-        ),
+        style: theme.textTheme.bodyMedium?.copyWith(fontSize: 16),
       ),
     );
   }
 
   /// Action button with Viking theme
-  static Widget actionButton(String label, VoidCallback onPressed) {
+  static Widget actionButton(
+    BuildContext context,
+    String label,
+    VoidCallback? onPressed,
+  ) {
     return ElevatedButton(
       onPressed: onPressed,
-      style: ElevatedButton.styleFrom(
-        backgroundColor: Colors.brown[700],
-        foregroundColor: Colors.amberAccent,
-        shape: const StadiumBorder(), // Axe-like shape
-      ),
+      style: Theme.of(context).elevatedButtonTheme.style,
       child: Text(
         label,
-        style: TextStyle(fontFamily: 'RuneFont', fontWeight: FontWeight.bold),
+        style: Theme.of(
+          context,
+        ).elevatedButtonTheme.style?.textStyle?.resolve({}),
       ),
     );
   }
 
   /// Generic status banner with Viking theme
-  static Widget statusBanner(String message) {
+  static Widget statusBanner(BuildContext context, String message) {
+    final theme = Theme.of(context);
     return Container(
       width: double.infinity,
-      color: Colors.grey[900], // Stormy night sky
+      color: theme.colorScheme.surface,
       padding: const EdgeInsets.all(8),
       child: Text(
         message,
         textAlign: TextAlign.center,
-        style: TextStyle(
+        style: theme.textTheme.bodyMedium?.copyWith(
           fontWeight: FontWeight.bold,
-          color: Colors.amber[100],
-          fontFamily: 'RuneFont',
+          fontSize: 16,
         ),
       ),
     );

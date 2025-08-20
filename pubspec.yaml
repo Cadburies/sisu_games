@@ -97,12 +97,16 @@ flutter:
     - assets/common/jd.jpg
     - assets/common/as.jpg
     - assets/common/ac.jpg
-    - assets/common/ah.jpg # need icon
+    - assets/common/ah.jpg
     - assets/common/ad.jpg
     - assets/common/10s.jpg
     - assets/common/10c.jpg
     - assets/common/10h.jpg
     - assets/common/10d.jpg
+    - assets/common/9s.jpg
+    - assets/common/9c.jpg
+    - assets/common/9h.jpg
+    - assets/common/9d.jpg
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

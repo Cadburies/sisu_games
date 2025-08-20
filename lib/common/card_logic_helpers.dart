@@ -1,6 +1,7 @@
+// lib/common/card_logic_helpers.dart
 import 'dart:math';
 
-/// Card game specific logic helpers
+/// Common helper functions for card logic.
 class CardLogicHelpers {
   static final Random _rng = Random();
 

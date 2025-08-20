@@ -1,9 +1,10 @@
+// lib/games/liars_dice/screen.dart
+import 'dart:async';
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
-import 'dart:convert';
-import 'dart:async';
-import 'dart:math';
 
 import '../../common/networking.dart';
 import '../../common/opening_screen.dart';
@@ -29,6 +30,29 @@ class _LiarsDiceScreenState extends ConsumerState<LiarsDiceScreen> {
   bool isHost = false;
   String? selectedRank;
   String? selectedFaceValue;
+
+  static const List<String> rankNames = [
+    'Five of a Kind',
+    'Four of a Kind',
+    'Full House',
+    'High Straight',
+    'Low Straight',
+    'Three of a Kind',
+    'Two Pair',
+    'One Pair',
+    'High Die',
+  ];
+
+  static const List<String> faceNames = [
+    'Ace',
+    'King',
+    'Queen',
+    'Jack',
+    'Ten',
+    'Nine',
+  ];
+
+  static const List<int> faceDiceValues = [6, 5, 4, 3, 2, 1];
 
   @override
   void initState() {
@@ -186,7 +210,7 @@ class _LiarsDiceScreenState extends ConsumerState<LiarsDiceScreen> {
       playerTurn: logic.userTurn,
       winner: logic.winner,
     );
-    Networking.send(channel!, state.toJson());
+    Networking.send(channel!, jsonEncode(state.toJson()));
   }
 
   void _rollDice() {
@@ -211,10 +235,10 @@ class _LiarsDiceScreenState extends ConsumerState<LiarsDiceScreen> {
       }
       return;
     }
-    final rank = PokerHandRank.values.firstWhere(
-      (r) => r.name == selectedRank!.split(' ')[0].toLowerCase(),
-    );
-    final faceValue = int.parse(selectedFaceValue!.split('=')[0]);
+    final rankIndex = rankNames.indexOf(selectedRank!);
+    final rank = PokerHandRank.values[rankIndex];
+    final faceIndex = faceNames.indexOf(selectedFaceValue!);
+    final faceValue = faceDiceValues[faceIndex];
     if (!logic.canDeclare(rank, faceValue)) {
       if (mounted) {
         setState(() {
@@ -246,93 +270,10 @@ class _LiarsDiceScreenState extends ConsumerState<LiarsDiceScreen> {
               ? 'Challenge correct! Last player loses a counter.'
               : 'Challenge failed! Challenger loses a counter.';
         }
-        logic.userTurn = true; // Return to player after challenge
+        logic.userTurn = !logic.userTurn;
       });
     }
     _sendState();
-  }
-
-  void _accept() {
-    if (mounted) {
-      setState(() {
-        message = 'You accepted the AI\'s declaration. Next player\'s turn.';
-        logic.userTurn = true; // Return to player after acceptance
-      });
-    }
-    _sendState();
-  }
-
-  void _aiTurn() async {
-    if (mounted) {
-      setState(() {
-        message = 'AI is thinking...';
-      });
-      await Future.delayed(const Duration(seconds: 2)); // Simulate AI thinking
-      final lastBid = logic.bidHistory.isNotEmpty
-          ? logic.bidHistory.last
-          : {'rank': 8, 'faceValue': 1}; // Default to lowest if no prior bid
-      int newRankIndex = lastBid['rank']! - 1;
-      int newFaceValue = lastBid['faceValue']!;
-      if (newRankIndex < 0) {
-        newRankIndex = lastBid['rank']!;
-        newFaceValue = min(6, lastBid['faceValue']! + 1);
-      }
-      final rank = PokerHandRank.values[newRankIndex];
-      logic.declareHand(rank, newFaceValue);
-      if (mounted) {
-        setState(() {
-          message =
-              'AI declared ${rank.name} of ${LiarsDiceHelpers.faceToString(newFaceValue)}.';
-        });
-      }
-      _sendState();
-      // Show accept/challenge options for player
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          backgroundColor: Theme.of(context).cardColor,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-          title: Text(
-            'AI\'s Declaration',
-            style: Theme.of(context).textTheme.headlineMedium,
-          ),
-          content: Text(
-            'Accept or challenge ${rank.name} of ${LiarsDiceHelpers.faceToString(newFaceValue)}?',
-            style: Theme.of(context).textTheme.bodyLarge,
-          ),
-          actions: [
-            TextButton(
-              style: TextButton.styleFrom(
-                foregroundColor: Theme.of(context).colorScheme.secondary,
-              ),
-              onPressed: () {
-                Navigator.of(context).pop();
-                _accept();
-              },
-              child: Text(
-                'Accept',
-                style: Theme.of(context).textTheme.bodyLarge,
-              ),
-            ),
-            TextButton(
-              style: TextButton.styleFrom(
-                foregroundColor: Theme.of(context).colorScheme.secondary,
-              ),
-              onPressed: () {
-                Navigator.of(context).pop();
-                _challenge();
-              },
-              child: Text(
-                'Challenge',
-                style: Theme.of(context).textTheme.bodyLarge,
-              ),
-            ),
-          ],
-        ),
-      );
-    }
   }
 
   void _reset() {
@@ -348,223 +289,241 @@ class _LiarsDiceScreenState extends ConsumerState<LiarsDiceScreen> {
     _sendState();
   }
 
+  void _aiTurn() {
+    // Placeholder for AI logic (assuming it's implemented elsewhere or add here)
+    // For example, simulate AI declare after delay
+    Timer(const Duration(seconds: 2), () {
+      // AI declare logic...
+      if (mounted) {
+        setState(() {
+          // Update state after AI action
+        });
+      }
+      _sendState();
+    });
+  }
+
+  Widget _buildToggle(BuildContext context, WidgetRef ref, bool isMultiplayer) {
+    return SwitchListTile(
+      title: Text(
+        'Multiplayer Mode',
+        style: Theme.of(
+          context,
+        ).textTheme.bodyLarge?.copyWith(fontFamily: 'RuneFont'),
+      ),
+      value: isMultiplayer,
+      activeColor: Theme.of(context).iconTheme.color,
+      inactiveThumbColor: Colors.grey[700],
+      inactiveTrackColor: Colors.grey[900],
+      onChanged: (value) {
+        ref.read(isMultiplayerProvider.notifier).state = value;
+        if (mounted) {
+          setState(() {
+            multiplayerDialogShown = false; // Reset dialog for next toggle
+          });
+        }
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    WidgetsBinding.instance.addPostFrameCallback(
-      (_) => _maybeShowMultiplayerDialog(),
-    );
     return Scaffold(
-      extendBody: true,
-      extendBodyBehindAppBar: true,
       appBar: AppBar(
-        title: Row(
-          children: [
-            Image.asset(
-              'assets/games/liars_dice/icon.jpg',
-              height: 36,
-              errorBuilder: (context, error, stackTrace) =>
-                  const Icon(Icons.casino, size: 36),
-            ),
-            const SizedBox(width: 12),
-            Text(
-              "Liar's Dice",
-              style: Theme.of(context).textTheme.headlineMedium,
-            ),
-          ],
+        title: Text(
+          'Liar\'s Dice',
+          style: Theme.of(context).textTheme.headlineMedium,
         ),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
       ),
       body: SingleChildScrollView(
-        child: Container(
-          decoration: const BoxDecoration(
-            image: DecorationImage(
-              image: AssetImage('assets/common/longship_background.png'),
-              fit: BoxFit.cover,
-            ),
-          ),
-          child: SafeArea(
-            bottom: true,
-            child: Padding(
-              padding: const EdgeInsets.only(bottom: 24.0),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  UIHelpers.playerStatus(
-                    'Player',
-                    logic.userCounters,
-                    isActive: logic.userTurn,
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              UIHelpers.playerStatus(
+                context,
+                'User Counters',
+                logic.userCounters,
+                isActive: logic.userTurn,
+              ),
+              const SizedBox(height: 8),
+              if (showDice)
+                Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(8),
                   ),
-                  const SizedBox(height: 8),
-                  if (showDice || logic.userTurn)
-                    Container(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      padding: const EdgeInsets.symmetric(
-                        vertical: 8,
-                        horizontal: 4,
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: List.generate(5, (index) {
-                          return GestureDetector(
-                            onTap: () {
-                              if (mounted) {
-                                setState(() {
-                                  logic.toggleDiceHold(index);
-                                });
-                              }
-                            },
-                            child: Container(
-                              decoration: BoxDecoration(
-                                color: logic.userDiceHold[index]
-                                    ? Colors.green.withValues(alpha: 0.5)
-                                    : Colors.grey.withValues(alpha: 0.5),
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              padding: const EdgeInsets.all(4.0),
-                              child: Image.asset(
-                                LiarsDiceHelpers.cardFaceAssetForDie(
-                                  logic.userDice[index],
-                                ),
-                                height: 55,
-                                errorBuilder: (c, e, s) =>
-                                    Icon(Icons.casino, size: 55),
-                              ),
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 8,
+                    horizontal: 4,
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: List.generate(5, (index) {
+                      return GestureDetector(
+                        onTap: () {
+                          if (mounted) {
+                            setState(() {
+                              logic.toggleDiceHold(index);
+                            });
+                          }
+                        },
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: logic.userDiceHold[index]
+                                ? Colors.green.withOpacity(0.5)
+                                : Colors.grey.withOpacity(0.5),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          padding: const EdgeInsets.all(4.0),
+                          child: Image.asset(
+                            LiarsDiceHelpers.cardFaceAssetForDie(
+                              logic.userDice[index],
                             ),
-                          );
-                        }),
-                      ),
-                    )
-                  else
-                    const Text(
-                      'Hidden',
-                      style: TextStyle(fontStyle: FontStyle.italic),
-                    ),
-                  const SizedBox(height: 8),
-                  UIHelpers.playerStatus(
-                    'AI',
-                    logic.aiCounters,
-                    isActive: !logic.userTurn,
+                            height: 55,
+                            errorBuilder: (c, e, s) =>
+                                Icon(Icons.casino, size: 55),
+                          ),
+                        ),
+                      );
+                    }),
                   ),
-                  if (showDice)
-                    Container(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      padding: const EdgeInsets.symmetric(
-                        vertical: 8,
-                        horizontal: 4,
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: logic.aiDice
-                            .map(
-                              (d) => Padding(
-                                padding: const EdgeInsets.all(4.0),
-                                child: Image.asset(
-                                  LiarsDiceHelpers.cardFaceAssetForDie(d),
-                                  height: 55,
-                                  errorBuilder: (c, e, s) =>
-                                      Icon(Icons.casino, size: 55),
-                                ),
-                              ),
-                            )
-                            .toList(),
-                      ),
-                    )
-                  else
-                    const Text(
-                      'Hidden',
-                      style: TextStyle(fontStyle: FontStyle.italic),
-                    ),
-                  const SizedBox(height: 16),
-                  if (logic.winner == null) ...[
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        UIHelpers.themedDropdown<String>(
-                          value: selectedRank,
-                          items: PokerHandRank.values.reversed.map((rank) {
-                            return DropdownMenuItem<String>(
-                              value:
-                                  '${rank.name} (Rank ${PokerHandRank.values.length - rank.index})',
-                              child: Text(
-                                '${rank.name} (Rank ${PokerHandRank.values.length - rank.index})',
-                                style: Theme.of(context).textTheme.bodyLarge,
-                              ),
-                            );
-                          }).toList(),
-                          onChanged: (value) {
-                            if (mounted) setState(() => selectedRank = value);
-                          },
-                          hint: 'Select Rank',
-                          context: context,
-                        ),
-                        const SizedBox(width: 8),
-                        UIHelpers.themedDropdown<String>(
-                          value: selectedFaceValue,
-                          items:
-                              [
-                                    '1=Ace',
-                                    '2=Queen',
-                                    '3=Jack',
-                                    '4=King',
-                                    '5=Ten',
-                                    '6=King of Spades',
-                                  ]
-                                  .map(
-                                    (face) => DropdownMenuItem<String>(
-                                      value: face,
-                                      child: Text(
-                                        face,
-                                        style: Theme.of(
-                                          context,
-                                        ).textTheme.bodyLarge,
-                                      ),
-                                    ),
-                                  )
-                                  .toList(),
-                          onChanged: (value) {
-                            if (mounted)
-                              setState(() => selectedFaceValue = value);
-                          },
-                          hint: 'Select Face',
-                          context: context,
-                        ),
-                        const SizedBox(width: 8),
-                        UIHelpers.actionButton(
-                          'Declare',
-                          () => logic.userTurn ? _submitBid() : null,
-                        ),
-                        const SizedBox(width: 8),
-                        UIHelpers.actionButton(
-                          'Challenge',
-                          () => !logic.userTurn ? _challenge() : null,
-                        ),
-                      ],
+                )
+              else
+                Text(
+                  'Hidden',
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodyMedium?.copyWith(fontStyle: FontStyle.italic),
+                ),
+              const SizedBox(height: 8),
+              UIHelpers.playerStatus(
+                context,
+                'AI Counters',
+                logic.aiCounters,
+                isActive: !logic.userTurn,
+              ),
+              if (showDice)
+                Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 8,
+                    horizontal: 4,
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: logic.aiDice
+                        .map(
+                          (d) => Padding(
+                            padding: const EdgeInsets.all(4.0),
+                            child: Image.asset(
+                              LiarsDiceHelpers.cardFaceAssetForDie(d),
+                              height: 55,
+                              errorBuilder: (c, e, s) =>
+                                  Icon(Icons.casino, size: 55),
+                            ),
+                          ),
+                        )
+                        .toList(),
+                  ),
+                )
+              else
+                Text(
+                  'Hidden',
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodyMedium?.copyWith(fontStyle: FontStyle.italic),
+                ),
+              const SizedBox(height: 16),
+              if (logic.winner == null) ...[
+                Column(
+                  children: [
+                    UIHelpers.themedDropdown<String>(
+                      value: selectedRank,
+                      items: List.generate(PokerHandRank.values.length, (
+                        index,
+                      ) {
+                        final rank = PokerHandRank.values[index];
+                        final name = rankNames[index];
+                        return DropdownMenuItem<String>(
+                          value: name,
+                          child: Row(
+                            children: [
+                              Text(name),
+                              const SizedBox(width: 8),
+                              LiarsDiceHelpers.sampleDiceForRank(context, name),
+                            ],
+                          ),
+                        );
+                      }),
+                      onChanged: (value) {
+                        if (mounted) {
+                          setState(() {
+                            selectedRank = value;
+                          });
+                        }
+                      },
+                      hint: 'Select Rank',
+                      context: context,
                     ),
                     const SizedBox(height: 8),
-                    UIHelpers.actionButton('Roll Dice', _rollDice),
-                  ],
-                  if (logic.winner != null)
-                    UIHelpers.actionButton('Play Again', _reset),
-                  const SizedBox(height: 16),
-                  if (isConnecting)
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Text(
-                        connectionStatus ?? '',
-                        style: Theme.of(context).textTheme.bodyLarge,
-                      ),
+                    UIHelpers.themedDropdown<String>(
+                      value: selectedFaceValue,
+                      items: List.generate(faceNames.length, (index) {
+                        final name = faceNames[index];
+                        final dieValue = faceDiceValues[index];
+                        return DropdownMenuItem<String>(
+                          value: name,
+                          child: Row(
+                            children: [
+                              Text(name),
+                              const SizedBox(width: 8),
+                              UIHelpers.vikingDiceFace(
+                                context,
+                                dieValue,
+                                size: 20,
+                              ),
+                            ],
+                          ),
+                        );
+                      }),
+                      onChanged: (value) {
+                        if (mounted) {
+                          setState(() {
+                            selectedFaceValue = value;
+                          });
+                        }
+                      },
+                      hint: 'Select Face',
+                      context: context,
                     ),
-                  UIHelpers.statusBanner(message),
-                  const SizedBox(height: 16),
-                  buildToggle(context, ref, ref.watch(isMultiplayerProvider)),
-                ],
-              ),
-            ),
+                    const SizedBox(height: 8),
+                    if (logic.userTurn)
+                      UIHelpers.actionButton(context, 'Declare', _submitBid),
+                    if (!logic.userTurn)
+                      UIHelpers.actionButton(context, 'Challenge', _challenge),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                UIHelpers.actionButton(context, 'Roll Dice', _rollDice),
+              ],
+              if (logic.winner != null)
+                UIHelpers.actionButton(context, 'Play Again', _reset),
+              const SizedBox(height: 16),
+              if (isConnecting)
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Text(
+                    connectionStatus ?? '',
+                    style: Theme.of(context).textTheme.bodyLarge,
+                  ),
+                ),
+              UIHelpers.statusBanner(context, message),
+              const SizedBox(height: 16),
+              _buildToggle(context, ref, ref.watch(isMultiplayerProvider)),
+            ],
           ),
         ),
       ),

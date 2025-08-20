@@ -1,5 +1,8 @@
+// lib/games/liars_dice/logic.dart
 import 'dart:math';
 import 'dart:convert';
+
+import '../../common/logic_helpers.dart';
 
 enum PokerHandRank {
   fiveOfAKind,
@@ -14,7 +17,6 @@ enum PokerHandRank {
 }
 
 class CommonHandLiarDiceLogic {
-  final Random _random = Random();
   int userCounters = 10;
   int aiCounters = 10;
   List<int> userDice = List.filled(5, 0);
@@ -33,16 +35,16 @@ class CommonHandLiarDiceLogic {
 
   // Determine first player based on highest hand and face value
   void determineFirstPlayer() {
-    userDice = List.generate(5, (_) => _random.nextInt(6) + 1);
-    aiDice = List.generate(5, (_) => _random.nextInt(6) + 1);
+    userDice = LogicHelpers.rollDice(5);
+    aiDice = LogicHelpers.rollDice(5);
     currentUserHandRank = evaluateHand(userDice);
-    currentUserFaceValue = userDice.reduce((a, b) => max(a, b));
+    currentUserFaceValue = evaluateFaceValue(userDice);
     final aiHandRank = evaluateHand(aiDice);
-    final aiFaceValue = aiDice.reduce((a, b) => max(a, b));
+    final aiFaceValue = evaluateFaceValue(aiDice);
     userTurn =
         (currentUserHandRank!.index < aiHandRank.index) ||
         (currentUserHandRank == aiHandRank &&
-            currentUserFaceValue! >= aiFaceValue);
+            currentUserFaceValue! >= aiFaceValue!);
   }
 
   PokerHandRank evaluateHand(List<int> dice) {
@@ -109,7 +111,7 @@ class CommonHandLiarDiceLogic {
   void rollDice() {
     for (int i = 0; i < 5; i++) {
       if (!userDiceHold[i]) {
-        userDice[i] = _random.nextInt(6) + 1;
+        userDice[i] = LogicHelpers.rollDice(1)[0];
       }
     }
     currentUserHandRank = evaluateHand(userDice);
@@ -172,24 +174,6 @@ class CommonHandLiarDiceLogic {
     roundActive = true;
     bidHistory.clear();
     determineFirstPlayer();
-  }
-
-  MultiplayerLiarDiceState toMultiplayerState() {
-    return MultiplayerLiarDiceState(
-      playerDiceCount: userCounters,
-      opponentDiceCount: aiCounters,
-      bidHistory: bidHistory,
-      playerTurn: userTurn,
-      winner: winner,
-    );
-  }
-
-  void fromMultiplayerState(MultiplayerLiarDiceState state) {
-    userCounters = state.playerDiceCount;
-    aiCounters = state.opponentDiceCount;
-    bidHistory = state.bidHistory;
-    userTurn = state.playerTurn;
-    winner = state.winner;
   }
 }
 

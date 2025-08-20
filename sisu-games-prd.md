@@ -71,7 +71,7 @@ Modes: Single-player with AI, multiplayer via local WiFi.
 3.3 Technical Requirements
 
 State Management: Use Provider or Riverpod.
-Theme: Custom ThemeData with Viking fonts, deep blues, earthy browns, metallic grays.
+Theme: Custom ThemeData with Viking fonts, deep blues, earthy browns, metallic grays. Put all theme/style related GUI in theme.dart if not already in lib/common/theme.dart and use it for example, in the screen.dart then as for example, "Theme.of(context).textTheme.headlineMedium"
 Testing: Unit tests for game logic, integration tests for multiplayer.
 Version Control: Git with branches per game/feature.
 Libraries: flame for game elements if needed, firebase only for cloud (avoid initially), local WiFi packages.
@@ -91,21 +91,21 @@ Iteration: Allow switching games mid-development as requested.
 Assets: Generate Viking-themed images/icons on demand (confirm before generating).
 Structure: Use modular monorepo with:
 
-lib/common/ for shared code/assets, including:
+6.1. lib/common/ for shared code, including:
 
 card_logic_helpers.dart contains all the common helper functions for card logic.
 logic_helpers.dart contains all the common helper functions for game logic.
 networking.dart contains all the common helper functions for networking logic.
 ui_helpers.dart contains all the common helper functions for UI widgets and screens.
 
-lib/games/[game_name]/ for game-specific logic and screens, including:
+6.2. lib/games/[game_name]/ for game-specific logic and screens, including:
 
 helpers.dart contains all the common helper functions for game-specific helpers.
 logic.dart contains all the common helper functions for game-specific logic.
 screen.dart contains all the common helper functions for the game-specific screen.
 
-assets/games/[game_name]/ for game assets.
-sisu-games-prd.md contains the Project Requirements Document.
+6.3. assets/games/[game_name]/ for game assets.
+6.4. sisu-games-prd.md contains the Project Requirements Document.
 
 7. Next Steps
 

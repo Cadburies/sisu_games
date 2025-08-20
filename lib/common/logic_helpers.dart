@@ -1,3 +1,4 @@
+// lib/common/logic_helpers.dart
 import 'dart:math';
 
 /// Common game logic helpers
