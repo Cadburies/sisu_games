@@ -4,6 +4,63 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 // Provider for single/multiplayer toggle state
 final isMultiplayerProvider = StateProvider<bool>((ref) => false);
 
+Widget buildGameIcon(
+  BuildContext context,
+  String title,
+  String imagePath,
+  String route,
+) {
+  return GestureDetector(
+    onTap: () {
+      Navigator.pushNamed(
+        context,
+        route,
+      ); // Navigate to the respective game screen
+    },
+    child: Card(
+      color: Theme.of(context).cardColor,
+      elevation: 4,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.all(Radius.circular(8)),
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Image.asset(
+            imagePath,
+            height: 80,
+            errorBuilder: (context, error, stackTrace) => const Icon(
+              Icons.broken_image,
+              size: 80,
+              color: Colors.amberAccent,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(title, style: Theme.of(context).textTheme.bodyLarge),
+        ],
+      ),
+    ),
+  );
+}
+
+Widget buildToggle(BuildContext context, WidgetRef ref, bool isMultiplayer) {
+  return Padding(
+    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+    child: SwitchListTile(
+      title: const Text(
+        'Multiplayer Mode',
+        style: TextStyle(fontFamily: 'RuneFont', color: Colors.amberAccent),
+      ),
+      value: isMultiplayer,
+      onChanged: (value) {
+        ref.read(isMultiplayerProvider.notifier).state = value;
+      },
+      activeColor: Colors.brown[700],
+      thumbIcon: WidgetStateProperty.all(Icon(Icons.sports_esports)),
+    ),
+  );
+}
+
 class OpeningScreen extends ConsumerWidget {
   const OpeningScreen({super.key});
 
@@ -48,49 +105,49 @@ class OpeningScreen extends ConsumerWidget {
                   mainAxisSpacing: 16,
                   crossAxisSpacing: 16,
                   children: [
-                    _buildGameIcon(
+                    buildGameIcon(
+                      context,
+                      "Liar's Dice",
+                      'assets/games/liars_dice/icon.jpg',
+                      '/liars_dice',
+                    ),
+                    buildGameIcon(
                       context,
                       'Backgammon',
                       'assets/games/backgammon/icon.jpg',
                       '/backgammon',
                     ),
-                    _buildGameIcon(
+                    buildGameIcon(
                       context,
                       'Checkers',
                       'assets/games/checkers/icon.jpg',
                       '/checkers',
                     ),
-                    _buildGameIcon(
+                    buildGameIcon(
                       context,
                       'Cribbage',
                       'assets/games/cribbage/icon.jpg',
                       '/cribbage',
                     ),
-                    _buildGameIcon(
-                      context,
-                      'Liar\'s Dice',
-                      'assets/games/liars_dice/icon.jpg',
-                      '/liars_dice',
-                    ),
-                    _buildGameIcon(
+                    buildGameIcon(
                       context,
                       'Poker',
                       'assets/games/poker/icon.jpg',
                       '/poker',
                     ),
-                    _buildGameIcon(
+                    buildGameIcon(
                       context,
                       'Solitaire',
                       'assets/games/solitaire/icon.jpg',
                       '/solitaire',
                     ),
-                    _buildGameIcon(
+                    buildGameIcon(
                       context,
                       'Uno',
                       'assets/games/uno/icon.jpg',
                       '/uno',
                     ),
-                    _buildGameIcon(
+                    buildGameIcon(
                       context,
                       'Yatzy',
                       'assets/games/yatzy/icon.jpg',
@@ -100,66 +157,9 @@ class OpeningScreen extends ConsumerWidget {
                 ),
               ),
             ),
-            _buildToggle(context, ref, isMultiplayer),
+            buildToggle(context, ref, isMultiplayer),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildGameIcon(
-    BuildContext context,
-    String title,
-    String imagePath,
-    String route,
-  ) {
-    return GestureDetector(
-      onTap: () {
-        Navigator.pushNamed(
-          context,
-          route,
-        ); // Navigate to the respective game screen
-      },
-      child: Card(
-        color: Theme.of(context).cardColor,
-        elevation: 4,
-        shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.all(Radius.circular(8)),
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Image.asset(
-              imagePath,
-              height: 80,
-              errorBuilder: (context, error, stackTrace) => const Icon(
-                Icons.broken_image,
-                size: 80,
-                color: Colors.amberAccent,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(title, style: Theme.of(context).textTheme.bodyLarge),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildToggle(BuildContext context, WidgetRef ref, bool isMultiplayer) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: SwitchListTile(
-        title: const Text(
-          'Multiplayer Mode',
-          style: TextStyle(fontFamily: 'RuneFont', color: Colors.amberAccent),
-        ),
-        value: isMultiplayer,
-        onChanged: (value) {
-          ref.read(isMultiplayerProvider.notifier).state = value;
-        },
-        activeColor: Colors.brown[700],
-        thumbIcon: WidgetStateProperty.all(Icon(Icons.sports_esports)),
       ),
     );
   }

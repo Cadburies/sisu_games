@@ -6,7 +6,7 @@ plugins {
 }
 
 android {
-    namespace = "com.example.sisu_games"
+    namespace = "com.sisu.sisu_games"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = "27.0.12077973" // Explicitly set for network_info_plus
 
@@ -21,7 +21,7 @@ android {
 
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId = "com.example.sisu_games"
+        applicationId = "com.sisu.sisu_games"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion

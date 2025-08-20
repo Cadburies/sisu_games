@@ -1,0 +1,65 @@
+import 'dart:math';
+
+/// Card game specific logic helpers
+class CardLogicHelpers {
+  static final Random _rng = Random();
+
+  /// Standard deck generator (52 cards)
+  static List<String> generateStandardDeck() {
+    const suits = ['♠', '♥', '♦', '♣'];
+    const ranks = [
+      'A',
+      '2',
+      '3',
+      '4',
+      '5',
+      '6',
+      '7',
+      '8',
+      '9',
+      '10',
+      'J',
+      'Q',
+      'K',
+    ];
+    return [
+      for (var suit in suits)
+        for (var rank in ranks) '$rank$suit',
+    ];
+  }
+
+  /// Uno deck generator (simplified)
+  static List<String> generateUnoDeck() {
+    const colors = ['Red', 'Blue', 'Green', 'Yellow'];
+    const ranks = [
+      '0',
+      '1',
+      '2',
+      '3',
+      '4',
+      '5',
+      '6',
+      '7',
+      '8',
+      '9',
+      'Skip',
+      'Reverse',
+      '+2',
+    ];
+    List<String> deck = [];
+    for (var color in colors) {
+      for (var rank in ranks) {
+        deck.add('$rank-$color');
+        if (rank != '0') deck.add('$rank-$color'); // two copies except 0
+      }
+    }
+    deck.addAll(['Wild', 'Wild Draw Four']);
+    return deck;
+  }
+
+  /// Shuffle helper
+  static List<T> shuffle<T>(List<T> items) {
+    items.shuffle(_rng);
+    return items;
+  }
+}

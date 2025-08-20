@@ -83,6 +83,26 @@ flutter:
     - assets/games/cribbage/icon.jpg
     - assets/games/uno/icon.jpg
     - assets/games/yatzy/icon.jpg
+    - assets/common/ks.jpg
+    - assets/common/kc.jpg
+    - assets/common/kh.jpg
+    - assets/common/kd.jpg
+    - assets/common/qs.jpg
+    - assets/common/qc.jpg
+    - assets/common/qh.jpg
+    - assets/common/qd.jpg
+    - assets/common/js.jpg
+    - assets/common/jc.jpg
+    - assets/common/jh.jpg
+    - assets/common/jd.jpg
+    - assets/common/as.jpg
+    - assets/common/ac.jpg
+    - assets/common/ah.jpg # need icon
+    - assets/common/ad.jpg
+    - assets/common/10s.jpg
+    - assets/common/10c.jpg
+    - assets/common/10h.jpg
+    - assets/common/10d.jpg
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

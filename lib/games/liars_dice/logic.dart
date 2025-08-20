@@ -1,90 +1,229 @@
 import 'dart:math';
+import 'dart:convert';
 
-class LiarDiceLogic {
+enum PokerHandRank {
+  fiveOfAKind,
+  fourOfAKind,
+  fullHouse,
+  highStraight,
+  lowStraight,
+  threeOfAKind,
+  twoPair,
+  onePair,
+  highDie,
+}
+
+class CommonHandLiarDiceLogic {
   final Random _random = Random();
-  int userDiceCount = 5;
-  int aiDiceCount = 5;
-  List<int> userDice = [];
-  List<int> aiDice = [];
-  List<Map<String, int>> bidHistory = [];
+  int userCounters = 10;
+  int aiCounters = 10;
+  List<int> userDice = List.filled(5, 0);
+  List<int> aiDice = List.filled(5, 0);
+  List<bool> userDiceHold = List.filled(5, false); // Hold/roll state
+  PokerHandRank? currentUserHandRank;
+  int? currentUserFaceValue; // Track the highest face value in the hand
+  PokerHandRank? declaredHandRank;
+  int? declaredFaceValue;
+  PokerHandRank? previousDeclaredHandRank;
+  int? previousDeclaredFaceValue;
   bool userTurn = true;
   String? winner;
+  bool roundActive = true;
+  List<Map<String, dynamic>> bidHistory = []; // Now includes face value
 
-  void rollDice() {
-    userDice = List.generate(userDiceCount, (_) => _random.nextInt(6) + 1);
-    aiDice = List.generate(aiDiceCount, (_) => _random.nextInt(6) + 1);
+  // Determine first player based on highest hand and face value
+  void determineFirstPlayer() {
+    userDice = List.generate(5, (_) => _random.nextInt(6) + 1);
+    aiDice = List.generate(5, (_) => _random.nextInt(6) + 1);
+    currentUserHandRank = evaluateHand(userDice);
+    currentUserFaceValue = userDice.reduce((a, b) => max(a, b));
+    final aiHandRank = evaluateHand(aiDice);
+    final aiFaceValue = aiDice.reduce((a, b) => max(a, b));
+    userTurn =
+        (currentUserHandRank!.index < aiHandRank.index) ||
+        (currentUserHandRank == aiHandRank &&
+            currentUserFaceValue! >= aiFaceValue);
   }
 
-  bool canBid(int quantity, int face) {
-    if (bidHistory.isEmpty) return true;
-    final lastBid = bidHistory.last;
-    if (quantity > lastBid['quantity']!) return true;
-    if (quantity == lastBid['quantity']! && face > lastBid['face']!)
+  PokerHandRank evaluateHand(List<int> dice) {
+    final counts = List.filled(7, 0);
+    for (var d in dice) {
+      counts[d]++;
+    }
+    final sorted = [...dice]..sort();
+    if (counts.contains(5)) return PokerHandRank.fiveOfAKind;
+    if (counts.contains(4)) return PokerHandRank.fourOfAKind;
+    if (counts.contains(3) && counts.contains(2)) {
+      return PokerHandRank.fullHouse;
+    }
+    if (sorted.join() == '12345') return PokerHandRank.lowStraight;
+    if (sorted.join() == '23456') return PokerHandRank.highStraight;
+    if (counts.contains(3)) return PokerHandRank.threeOfAKind;
+    if (counts.where((c) => c == 2).length == 2) return PokerHandRank.twoPair;
+    if (counts.contains(2)) return PokerHandRank.onePair;
+    return PokerHandRank.highDie;
+  }
+
+  int? evaluateFaceValue(List<int> dice) {
+    // Return the highest face value among matching dice for the declared rank
+    final counts = List.filled(7, 0);
+    for (var d in dice) {
+      counts[d]++;
+    }
+    if (counts.contains(4)) {
+      return dice.where((d) => counts[d] == 4).reduce(max);
+    }
+    if (counts.contains(3)) {
+      return dice.where((d) => counts[d] == 3).reduce(max);
+    }
+    if (counts.contains(2) && counts.where((c) => c == 2).length == 2) {
+      return dice.where((d) => counts[d] == 2).reduce(max);
+    }
+    return dice.reduce(max); // For highDie or straights
+  }
+
+  bool canDeclare(PokerHandRank rank, int faceValue) {
+    if (previousDeclaredHandRank == null && previousDeclaredFaceValue == null) {
       return true;
+    }
+    if (rank.index < previousDeclaredHandRank!.index) return true;
+    if (rank.index == previousDeclaredHandRank!.index &&
+        faceValue > previousDeclaredFaceValue!) {
+      return true;
+    }
     return false;
   }
 
-  void bid(int quantity, int face) {
-    bidHistory.add({'quantity': quantity, 'face': face});
+  void declareHand(PokerHandRank rank, int faceValue) {
+    if (!canDeclare(rank, faceValue)) {
+      throw Exception('Must declare a higher hand or face value.');
+    }
+    declaredHandRank = rank;
+    declaredFaceValue = faceValue;
+    previousDeclaredHandRank = rank;
+    previousDeclaredFaceValue = faceValue;
     userTurn = !userTurn;
+    bidHistory.add({'rank': rank.index, 'faceValue': faceValue});
   }
 
-  Map<String, int> aiBid() {
-    // Simple AI: bid +1 quantity or +1 face, based on probability
-    int lastQuantity = 1;
-    int lastFace = 1;
-    if (bidHistory.isNotEmpty) {
-      lastQuantity = bidHistory.last['quantity']!;
-      lastFace = bidHistory.last['face']!;
+  void rollDice() {
+    for (int i = 0; i < 5; i++) {
+      if (!userDiceHold[i]) {
+        userDice[i] = _random.nextInt(6) + 1;
+      }
     }
-    // AI logic: try to increase quantity, else face
-    int aiQuantity = lastQuantity;
-    int aiFace = lastFace;
-    if (lastFace < 6) {
-      aiFace++;
-    } else {
-      aiQuantity++;
-      aiFace = 1;
+    currentUserHandRank = evaluateHand(userDice);
+    currentUserFaceValue = evaluateFaceValue(userDice);
+    userDiceHold.fillRange(0, 5, false); // Reset hold state after roll
+  }
+
+  void toggleDiceHold(int index) {
+    if (index >= 0 && index < 5) {
+      userDiceHold[index] = !userDiceHold[index];
     }
-    bidHistory.add({'quantity': aiQuantity, 'face': aiFace});
-    userTurn = !userTurn;
-    return {'quantity': aiQuantity, 'face': aiFace};
   }
 
   bool challenge() {
-    if (bidHistory.isEmpty) return false;
-    final lastBid = bidHistory.last;
-    int total =
-        userDice.where((d) => d == lastBid['face']).length +
-        aiDice.where((d) => d == lastBid['face']).length;
-    bool success = total >= lastBid['quantity']!;
-    if (success) {
-      // Challenger loses a die
+    if (declaredHandRank == null ||
+        declaredFaceValue == null ||
+        currentUserHandRank == null ||
+        currentUserFaceValue == null) {
+      return false;
+    }
+    bool challengeSuccess =
+        (declaredHandRank!.index < currentUserHandRank!.index) ||
+        (declaredHandRank == currentUserHandRank &&
+            declaredFaceValue! < currentUserFaceValue!);
+    if (challengeSuccess) {
+      // Challenger was right, last player loses a counter
       if (userTurn) {
-        userDiceCount = max(0, userDiceCount - 1);
+        aiCounters = (aiCounters - 1).clamp(0, 10);
       } else {
-        aiDiceCount = max(0, aiDiceCount - 1);
+        userCounters = (userCounters - 1).clamp(0, 10);
       }
     } else {
-      // Bidder loses a die
+      // Challenger was wrong, challenger loses a counter
       if (userTurn) {
-        aiDiceCount = max(0, aiDiceCount - 1);
+        userCounters = (userCounters - 1).clamp(0, 10);
       } else {
-        userDiceCount = max(0, userDiceCount - 1);
+        aiCounters = (aiCounters - 1).clamp(0, 10);
       }
     }
-    if (userDiceCount == 0) winner = 'AI';
-    if (aiDiceCount == 0) winner = 'User';
-    return success;
+    if (userCounters == 0) winner = 'AI';
+    if (aiCounters == 0) winner = 'User';
+    roundActive = false;
+    return challengeSuccess;
   }
 
   void reset() {
-    userDiceCount = 5;
-    aiDiceCount = 5;
-    userDice = [];
-    aiDice = [];
-    bidHistory = [];
+    userCounters = 10;
+    aiCounters = 10;
+    userDice = List.filled(5, 0);
+    aiDice = List.filled(5, 0);
+    userDiceHold = List.filled(5, false);
+    currentUserHandRank = null;
+    currentUserFaceValue = null;
+    declaredHandRank = null;
+    declaredFaceValue = null;
+    previousDeclaredHandRank = null;
+    previousDeclaredFaceValue = null;
     userTurn = true;
     winner = null;
+    roundActive = true;
+    bidHistory.clear();
+    determineFirstPlayer();
   }
+
+  MultiplayerLiarDiceState toMultiplayerState() {
+    return MultiplayerLiarDiceState(
+      playerDiceCount: userCounters,
+      opponentDiceCount: aiCounters,
+      bidHistory: bidHistory,
+      playerTurn: userTurn,
+      winner: winner,
+    );
+  }
+
+  void fromMultiplayerState(MultiplayerLiarDiceState state) {
+    userCounters = state.playerDiceCount;
+    aiCounters = state.opponentDiceCount;
+    bidHistory = state.bidHistory;
+    userTurn = state.playerTurn;
+    winner = state.winner;
+  }
+}
+
+class MultiplayerLiarDiceState {
+  final int playerDiceCount;
+  final int opponentDiceCount;
+  final List<Map<String, dynamic>> bidHistory;
+  final bool playerTurn;
+  final String? winner;
+
+  MultiplayerLiarDiceState({
+    required this.playerDiceCount,
+    required this.opponentDiceCount,
+    required this.bidHistory,
+    required this.playerTurn,
+    required this.winner,
+  });
+
+  Map<String, dynamic> toJson() => {
+    'playerDiceCount': playerDiceCount,
+    'opponentDiceCount': opponentDiceCount,
+    'bidHistory': bidHistory,
+    'playerTurn': playerTurn,
+    'winner': winner,
+  };
+
+  static MultiplayerLiarDiceState fromJson(Map<String, dynamic> json) =>
+      MultiplayerLiarDiceState(
+        playerDiceCount: json['playerDiceCount'],
+        opponentDiceCount: json['opponentDiceCount'],
+        bidHistory: List<Map<String, dynamic>>.from(
+          (json['bidHistory'] as List).map((e) => Map<String, dynamic>.from(e)),
+        ),
+        playerTurn: json['playerTurn'],
+        winner: json['winner'],
+      );
 }

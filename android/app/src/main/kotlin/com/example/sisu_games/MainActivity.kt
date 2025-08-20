@@ -1,4 +1,4 @@
-package com.example.sisu_games
+package com.sisu.sisu_games
 
 import io.flutter.embedding.android.FlutterActivity
 
