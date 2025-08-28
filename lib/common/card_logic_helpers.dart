@@ -5,6 +5,29 @@ import 'dart:math';
 class CardLogicHelpers {
   static final Random _rng = Random();
 
+  static const List<String> rankNames = [
+    'Five of a Kind',
+    'Four of a Kind',
+    'Full House',
+    'High Straight',
+    'Low Straight',
+    'Three of a Kind',
+    'Two Pair',
+    'One Pair',
+    'High Die',
+  ];
+
+  static const List<String> faceNames = [
+    'Ace',
+    'King',
+    'Queen',
+    'Jack',
+    'Ten',
+    'Nine',
+  ];
+
+  static const List<int> faceDiceValues = [6, 5, 4, 3, 2, 1];
+
   /// Standard deck generator (52 cards)
   static List<String> generateStandardDeck() {
     const suits = ['♠', '♥', '♦', '♣'];

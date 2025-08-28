@@ -2,82 +2,80 @@
 import 'package:flutter/material.dart';
 
 class VikingTheme {
-  static ThemeData get theme {
-    return ThemeData(
-      primaryColor: Colors.blueGrey[800], // Deep fjord blue
-      colorScheme: ColorScheme.fromSwatch().copyWith(
-        secondary: Colors.brown[700], // Weathered wood brown
-        primary: Colors.blueGrey[800],
-        surface: Colors.grey[900], // Stormy night sky
+  // Base colors
+  static const Color accentYellow = Color(0xFFFFD700);
+  static const Color bodyText = Color(0xFFFFF8E1);
+  static const Color buttonText = Color(0xFFFFF8E1);
+  static const Color titleText = Color(0xFFFFD700);
+
+  // Background colors
+  static const Color cardBackground = Color(0xFF3E2723);
+  static const Color buttonBackground = Color(0xFF795548);
+  static const Color dialogBackground = Color(0xFF2D1B12);
+  static const Color diceBackground = Color(0xFF5D4037);
+  static const Color inputBackground = Color(0xFF4E342E);
+
+  // Accent colors
+  static const Color borderAccent = Color(0xFFB71C1C);
+  static const Color selectedAccent = Color(0xFFFBC02D);
+
+  // Theme configuration
+  static ThemeData get theme => ThemeData(
+    primarySwatch: Colors.brown,
+    fontFamily: 'RuneFont',
+    scaffoldBackgroundColor: Colors.transparent,
+    cardColor: cardBackground,
+    dialogBackgroundColor: dialogBackground,
+
+    // Text themes
+    textTheme: const TextTheme(
+      headlineMedium: TextStyle(
+        color: titleText,
+        fontSize: 24,
+        fontWeight: FontWeight.bold,
+        fontFamily: 'RuneFont',
       ),
-      scaffoldBackgroundColor: Colors.grey[900],
-      cardColor: Colors.brown[900], // Plank wood for cards/boards
-      textTheme: TextTheme(
-        bodyLarge: TextStyle(
-          fontFamily: 'RuneFont',
-          color: Colors.amber[100],
-          fontSize: 16,
-        ),
-        headlineMedium: TextStyle(
-          fontFamily: 'RuneFont',
-          color: Colors.grey[300],
-          fontSize: 24,
+      titleLarge: TextStyle(
+        color: bodyText,
+        fontSize: 20,
+        fontWeight: FontWeight.bold,
+      ),
+      titleMedium: TextStyle(
+        color: bodyText,
+        fontSize: 18,
+        fontWeight: FontWeight.bold,
+      ),
+      bodyLarge: TextStyle(color: bodyText, fontSize: 16),
+      labelLarge: TextStyle(
+        color: buttonText,
+        fontSize: 16,
+        fontWeight: FontWeight.bold,
+      ),
+    ),
+
+    // Button themes
+    elevatedButtonTheme: ElevatedButtonThemeData(
+      style: ElevatedButton.styleFrom(
+        backgroundColor: buttonBackground,
+        foregroundColor: buttonText,
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+        textStyle: const TextStyle(
           fontWeight: FontWeight.bold,
-        ),
-        bodyMedium: TextStyle(
-          fontFamily: 'RuneFont',
-          color: Colors.amberAccent,
-          fontSize: 14,
-        ),
-      ),
-      buttonTheme: ButtonThemeData(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8), // Shield-like edges
-        ),
-        buttonColor: Colors.brown[800], // Horn button style
-      ),
-      elevatedButtonTheme: ElevatedButtonThemeData(
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.brown[700],
-          foregroundColor: Colors.amberAccent,
-          shape: const StadiumBorder(), // Axe-like button shape
-          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-          textStyle: TextStyle(
-            fontFamily: 'RuneFont',
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-      ),
-      inputDecorationTheme: InputDecorationTheme(
-        filled: true,
-        fillColor: Colors.brown[900],
-        labelStyle: TextStyle(
-          color: Colors.amberAccent,
-          fontWeight: FontWeight.bold,
           fontFamily: 'RuneFont',
         ),
-        hintStyle: TextStyle(
-          color: Colors.amber[200],
-          fontWeight: FontWeight.bold,
-          fontFamily: 'RuneFont',
-        ),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: Colors.amberAccent, width: 2),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: Colors.amberAccent, width: 2),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: Colors.yellow, width: 2),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       ),
-      iconTheme: IconThemeData(
-        color: Colors.amber[200], // Rune-etched icons
-        size: 24,
+    ),
+
+    // Input decoration theme
+    inputDecorationTheme: InputDecorationTheme(
+      fillColor: inputBackground,
+      filled: true,
+      labelStyle: const TextStyle(color: accentYellow),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(8),
+        borderSide: const BorderSide(color: accentYellow, width: 2),
       ),
-    );
-  }
+    ),
+  );
 }

@@ -75,6 +75,9 @@ flutter:
     - assets/fonts/NotoSansRunic-Regular.ttf
     - assets/icon/icon.jpg # Background image for the app
     - assets/common/longship_background.png # Background image for the app
+    - assets/common/stormy_fjord.jpg # Background image for the help screen
+    - assets/common/viking_axe.png
+    - assets/common/dice_background.png
     - assets/games/poker/icon.jpg
     - assets/games/liars_dice/icon.jpg
     - assets/games/solitaire/icon.jpg

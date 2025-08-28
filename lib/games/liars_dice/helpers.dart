@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 
 import '../../common/ui_helpers.dart';
+import 'models/poker_hand_rank.dart';
 
 class LiarsDiceHelpers {
   static String cardFaceAssetForDie(int die) {
@@ -46,7 +47,7 @@ class LiarsDiceHelpers {
   static Widget sampleDiceForRank(
     BuildContext context,
     String rankName, {
-    double size = 30,
+    double size = 26,
   }) {
     List<int> sampleDice;
     switch (rankName.toLowerCase()) {
@@ -91,5 +92,68 @@ class LiarsDiceHelpers {
           )
           .toList(),
     );
+  }
+
+  static (PokerHandRank, int) calculateHandRankAndFace(List<int> dice) {
+    // Sort dice for easier analysis
+    final sorted = List<int>.from(dice)..sort();
+
+    // Count occurrences of each value
+    final counts = <int, int>{};
+    for (final die in sorted) {
+      counts[die] = (counts[die] ?? 0) + 1;
+    }
+
+    // Check for five of a kind
+    if (counts.values.contains(5)) {
+      return (PokerHandRank.fiveOfAKind, sorted.last);
+    }
+
+    // Check for four of a kind
+    if (counts.values.contains(4)) {
+      return (PokerHandRank.fourOfAKind, sorted.last);
+    }
+
+    // Check for full house
+    if (counts.values.contains(3) && counts.values.contains(2)) {
+      return (PokerHandRank.fullHouse, sorted.last);
+    }
+
+    // Check for straights
+    if (sorted.join() == '12345') {
+      return (PokerHandRank.lowStraight, 5);
+    }
+    if (sorted.join() == '23456') {
+      return (PokerHandRank.highStraight, 6);
+    }
+
+    // Check for three of a kind
+    if (counts.values.contains(3)) {
+      return (PokerHandRank.threeOfAKind, sorted.last);
+    }
+
+    // Check for two pair
+    if (counts.values.where((c) => c == 2).length == 2) {
+      return (PokerHandRank.twoPair, sorted.last);
+    }
+
+    // Check for one pair
+    if (counts.values.contains(2)) {
+      return (PokerHandRank.onePair, sorted.last);
+    }
+
+    // High die
+    return (PokerHandRank.highCard, sorted.last);
+  }
+
+  static bool isHigher(
+    PokerHandRank rank1,
+    int face1,
+    PokerHandRank rank2,
+    int face2,
+  ) {
+    if (rank1.index < rank2.index) return true;
+    if (rank1.index > rank2.index) return false;
+    return face1 > face2;
   }
 }

@@ -40,8 +40,8 @@ class UIHelpers {
       padding: const EdgeInsets.all(8),
       decoration: BoxDecoration(
         color: isActive
-            ? theme.primaryColor.withOpacity(0.3)
-            : theme.colorScheme.surface.withOpacity(0.3),
+            ? theme.primaryColor.withValues(alpha: 0.3)
+            : theme.colorScheme.surface.withValues(alpha: 0.3),
         borderRadius: BorderRadius.circular(8),
         border: Border.all(color: theme.iconTheme.color!, width: 1),
       ),
@@ -82,7 +82,7 @@ class UIHelpers {
       child: Text(
         value.toString(),
         style: theme.textTheme.bodyMedium?.copyWith(
-          fontSize: 22,
+          fontSize: 12,
           fontWeight: FontWeight.bold,
         ),
       ),
