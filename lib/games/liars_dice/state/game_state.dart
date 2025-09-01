@@ -12,6 +12,11 @@ class GameState {
   final bool showAiDice;
   final PokerHandRank? declaredRank;
   final int? declaredFace;
+  final int playerCounters;
+  final int aiCounters;
+  final List<Map<String, dynamic>> bidHistory;
+  final String? winner;
+  final bool showNewRoundButton;
 
   GameState({
     required this.phase,
@@ -25,6 +30,11 @@ class GameState {
     this.showAiDice = false,
     this.declaredRank,
     this.declaredFace,
+    this.playerCounters = 10,
+    this.aiCounters = 10,
+    this.bidHistory = const [],
+    this.winner,
+    this.showNewRoundButton = false,
   });
 
   GameState copyWith({
@@ -39,6 +49,11 @@ class GameState {
     bool? showAiDice,
     PokerHandRank? declaredRank,
     int? declaredFace,
+    int? playerCounters,
+    int? aiCounters,
+    List<Map<String, dynamic>>? bidHistory,
+    String? winner,
+    bool? showNewRoundButton,
   }) {
     return GameState(
       phase: phase ?? this.phase,
@@ -52,6 +67,11 @@ class GameState {
       showAiDice: showAiDice ?? this.showAiDice,
       declaredRank: declaredRank ?? this.declaredRank,
       declaredFace: declaredFace ?? this.declaredFace,
+      playerCounters: playerCounters ?? this.playerCounters,
+      aiCounters: aiCounters ?? this.aiCounters,
+      bidHistory: bidHistory ?? this.bidHistory,
+      winner: winner ?? this.winner,
+      showNewRoundButton: showNewRoundButton ?? this.showNewRoundButton,
     );
   }
 }

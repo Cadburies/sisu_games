@@ -24,26 +24,30 @@ class CommonHandLogic {
   PokerHandRank? currentAiHandRank;
   int? currentAiFaceValue;
 
-  // Determine first player based on highest hand and face value
   void determineFirstPlayer() {
+    // Roll dice for both players
     userDice = LogicHelpers.rollDice(5);
     aiDice = LogicHelpers.rollDice(5);
-    currentUserHandRank = evaluateHand(userDice);
-    currentUserFaceValue = evaluateFaceValue(userDice);
-    currentAiHandRank = evaluateHand(aiDice);
-    currentAiFaceValue = evaluateFaceValue(aiDice);
-    userTurn =
-        (currentUserHandRank!.index < currentAiHandRank!.index) ||
-        (currentUserHandRank == currentAiHandRank &&
-            currentUserFaceValue! >= currentAiFaceValue!);
-  }
 
-  bool determineStarter(List<int> playerDice, List<int> aiDice) {
+    // Calculate ranks and faces using LiarsDiceHelpers
     final (playerRank, playerFace) = LiarsDiceHelpers.calculateHandRankAndFace(
-      playerDice,
+      userDice,
     );
     final (aiRank, aiFace) = LiarsDiceHelpers.calculateHandRankAndFace(aiDice);
-    return LiarsDiceHelpers.isHigher(playerRank, playerFace, aiRank, aiFace);
+
+    // Update internal state
+    currentUserHandRank = playerRank;
+    currentUserFaceValue = playerFace;
+    currentAiHandRank = aiRank;
+    currentAiFaceValue = aiFace;
+
+    // Determine who starts using isHigher
+    userTurn = LiarsDiceHelpers.isHigher(
+      playerRank,
+      playerFace,
+      aiRank,
+      aiFace,
+    );
   }
 
   // Add bid validation
@@ -144,37 +148,47 @@ class CommonHandLogic {
     if (declaredHandRank == null || declaredFaceValue == null) {
       return false;
     }
-    PokerHandRank actualRank;
-    int? actualFace;
-    if (userTurn) {
-      // User challenging AI
-      actualRank = currentAiHandRank!;
-      actualFace = currentAiFaceValue;
-    } else {
-      // AI challenging user
-      actualRank = currentUserHandRank!;
-      actualFace = currentUserFaceValue;
-    }
-    bool challengeSuccess =
-        (declaredHandRank!.index < actualRank.index) ||
-        (declaredHandRank == actualRank && declaredFaceValue! > actualFace!);
+
+    // Combine all dice from both players for evaluation
+    List<int> allDice = [...userDice, ...aiDice];
+
+    // Evaluate the combined hand
+    PokerHandRank actualRank = evaluateHand(allDice);
+    int? actualFace = evaluateFaceValue(allDice);
+
+    // Compare declared bid to actual combined hand
+    // Challenge succeeds if actual hand is WORSE than declared (declarer was lying)
+    bool challengeSuccess = !LiarsDiceHelpers.isHigher(
+      actualRank,
+      actualFace ?? 1,
+      declaredHandRank!,
+      declaredFaceValue!,
+    ) && !(actualRank == declaredHandRank && actualFace == declaredFaceValue);
+
     if (challengeSuccess) {
-      // Challenger was right, challenged loses a counter
-      if (userTurn) {
-        aiCounters = (aiCounters - 1).clamp(0, 10);
-      } else {
+      // Challenge was successful - declarer was lying, so declarer loses counter
+      if (!userTurn) {
+        // AI is challenging user's declaration, user loses counter
         userCounters = (userCounters - 1).clamp(0, 10);
+      } else {
+        // User is challenging AI's declaration, AI loses counter
+        aiCounters = (aiCounters - 1).clamp(0, 10);
       }
     } else {
-      // Challenger was wrong, challenger loses a counter
-      if (userTurn) {
-        userCounters = (userCounters - 1).clamp(0, 10);
-      } else {
+      // Challenge failed - declarer was telling truth, challenger loses counter
+      if (!userTurn) {
+        // AI challenged but was wrong, AI loses counter
         aiCounters = (aiCounters - 1).clamp(0, 10);
+      } else {
+        // User challenged but was wrong, user loses counter
+        userCounters = (userCounters - 1).clamp(0, 10);
       }
     }
+
+    // Check for winner
     if (userCounters == 0) winner = 'AI';
     if (aiCounters == 0) winner = 'User';
+
     roundActive = false;
     return challengeSuccess;
   }
@@ -200,54 +214,93 @@ class CommonHandLogic {
     determineFirstPlayer();
   }
 
-  // Add these methods inside the CommonHandLogic class
+  // AI Logic: When there is a pair, hold the pair and roll the three odd dice
+  void aiRollDice() {
+    // Reset AI hold state
+    List<bool> aiDiceHold = List.filled(5, false);
+
+    // Find pairs and hold them
+    Map<int, List<int>> diceGroups = {};
+    for (int i = 0; i < aiDice.length; i++) {
+      int die = aiDice[i];
+      if (!diceGroups.containsKey(die)) {
+        diceGroups[die] = [];
+      }
+      diceGroups[die]!.add(i);
+    }
+
+    // Hold pairs (exactly 2 of a kind)
+    for (var entry in diceGroups.entries) {
+      if (entry.value.length == 2) {
+        // Hold the pair
+        aiDiceHold[entry.value[0]] = true;
+        aiDiceHold[entry.value[1]] = true;
+      }
+    }
+
+    // Roll non-held dice
+    for (int i = 0; i < 5; i++) {
+      if (!aiDiceHold[i]) {
+        aiDice[i] = LogicHelpers.rollDice(1)[0];
+      }
+    }
+
+    // Update AI's current hand
+    currentAiHandRank = evaluateHand(aiDice);
+    currentAiFaceValue = evaluateFaceValue(aiDice);
+  }
+
+  // AI decision making for challenge/accept
   bool shouldAiChallenge() {
     if (declaredHandRank == null || declaredFaceValue == null) return false;
 
-    // Challenge if declared hand is much better than AI's actual hand
-    if (declaredHandRank!.index + 2 < currentAiHandRank!.index) {
+    // Challenge if the declared hand seems too good to be true
+    // (AI's actual hand is much worse than declared)
+    if (declaredHandRank!.index > currentAiHandRank!.index + 1) {
       return true;
     }
 
-    // Challenge if same rank but declared face value is suspiciously high
+    // Challenge if same rank but declared face is higher than AI's
     if (declaredHandRank == currentAiHandRank &&
-        declaredFaceValue! > currentAiFaceValue! + 2) {
+        declaredFaceValue! > currentAiFaceValue!) {
       return true;
     }
 
-    // Random challenge with low probability
-    return Random().nextDouble() < 0.1; // 10% chance to challenge anyway
+    // 20% chance to challenge randomly for unpredictability
+    return Random().nextDouble() < 0.2;
   }
 
-  PokerHandRank calculateHigherRank() {
-    if (declaredHandRank == null) {
-      return currentAiHandRank ?? PokerHandRank.highCard;
+  // Calculate what AI should declare (must be higher than previous)
+  (PokerHandRank, int) calculateAiDeclaration() {
+    PokerHandRank aiRank;
+    int aiFace;
+
+    if (previousDeclaredHandRank == null) {
+      // First declaration - use AI's actual hand
+      aiRank = currentAiHandRank ?? PokerHandRank.highCard;
+      aiFace = currentAiFaceValue ?? 1;
+    } else {
+      // Must declare higher than previous
+      if (previousDeclaredHandRank!.index > 0) {
+        // Can go to next higher rank
+        aiRank = PokerHandRank.values[previousDeclaredHandRank!.index - 1];
+        aiFace = previousDeclaredFaceValue ?? 1;
+      } else {
+        // At highest rank, must increase face value
+        aiRank = previousDeclaredHandRank!;
+        aiFace = (previousDeclaredFaceValue ?? 1) + 1;
+        if (aiFace > 6) aiFace = 6; // Cap at 6
+      }
     }
 
-    // Try to declare one rank higher than current declaration
-    final nextRankIndex = (declaredHandRank!.index - 1).clamp(
-      0,
-      PokerHandRank.values.length - 1,
-    );
-    return PokerHandRank.values[nextRankIndex];
-  }
-
-  int calculateHigherFace() {
-    if (declaredFaceValue == null) {
-      return currentAiFaceValue ?? 1;
-    }
-
-    // If same rank, increase face value
-    if (declaredHandRank == calculateHigherRank()) {
-      return (declaredFaceValue! + 1).clamp(1, 6);
-    }
-
-    // For different rank, use AI's actual highest face value
-    return currentAiFaceValue ?? 1;
+    return (aiRank, aiFace);
   }
 
   AiDecision getAiDecision() {
-    // AI decides whether to challenge or declare higher
+    // First, AI rolls its dice according to strategy
+    aiRollDice();
+
+    // Then decide whether to challenge or declare
     if (shouldAiChallenge()) {
       return AiDecision(
         isChallenge: true,
@@ -255,16 +308,14 @@ class CommonHandLogic {
       );
     }
 
-    // AI declares higher hand
-    final aiRank = calculateHigherRank();
-    final aiFace = calculateHigherFace();
+    // Calculate and make declaration
+    final (aiRank, aiFace) = calculateAiDeclaration();
 
     return AiDecision(
       isChallenge: false,
       rank: aiRank,
       faceValue: aiFace,
-      message:
-          'AI declares ${aiRank.name} of ${LiarsDiceHelpers.faceToString(aiFace)}',
+      message: 'AI declares ${aiRank.name} of ${LiarsDiceHelpers.faceToString(aiFace)}',
     );
   }
 }

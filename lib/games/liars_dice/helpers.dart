@@ -25,22 +25,7 @@ class LiarsDiceHelpers {
   }
 
   static String faceToString(int faceValue) {
-    switch (faceValue) {
-      case 6:
-        return 'Ace';
-      case 5:
-        return 'King';
-      case 4:
-        return 'Queen';
-      case 3:
-        return 'Jack';
-      case 2:
-        return 'Ten';
-      case 1:
-        return 'Nine';
-      default:
-        return 'Unknown';
-    }
+    return faceValue.toString();
   }
 
   /// Sample dice display for poker hand ranks (game-specific)
@@ -52,31 +37,31 @@ class LiarsDiceHelpers {
     List<int> sampleDice;
     switch (rankName.toLowerCase()) {
       case 'five of a kind':
-        sampleDice = [6, 6, 6, 6, 6]; // Ace
+        sampleDice = [6, 6, 6, 6, 6]; // Five 6s
         break;
       case 'four of a kind':
-        sampleDice = [6, 6, 6, 6, 1]; // Aces with Nine
+        sampleDice = [5, 5, 5, 5, 2]; // Four 5s with a 2
         break;
       case 'full house':
-        sampleDice = [6, 6, 6, 5, 5]; // Aces over Kings
+        sampleDice = [6, 6, 6, 5, 5]; // Three 6s and two 5s
         break;
       case 'high straight':
-        sampleDice = [2, 3, 4, 5, 6]; // Ten to Ace
+        sampleDice = [2, 3, 4, 5, 6]; // 2-3-4-5-6
         break;
       case 'low straight':
-        sampleDice = [1, 2, 3, 4, 5]; // Nine to King
+        sampleDice = [1, 2, 3, 4, 5]; // 1-2-3-4-5
         break;
       case 'three of a kind':
-        sampleDice = [6, 6, 6, 1, 2]; // Aces with high kickers
+        sampleDice = [4, 4, 4, 1, 3]; // Three 4s with 1 and 3
         break;
       case 'two pair':
-        sampleDice = [6, 6, 5, 5, 1]; // Aces and Kings
+        sampleDice = [6, 6, 3, 3, 1]; // Pair of 6s and pair of 3s with 1
         break;
       case 'one pair':
-        sampleDice = [6, 6, 1, 2, 3]; // Aces with high kickers
+        sampleDice = [6, 6, 5, 4, 3]; // Pair of 6s with 5, 4, 3
         break;
-      case 'high die':
-        sampleDice = [6]; // Ace
+      case 'high card':
+        sampleDice = [6, 5, 4, 2, 1]; // High card 6 with no pairs
         break;
       default:
         sampleDice = [1, 2, 3, 4, 5];

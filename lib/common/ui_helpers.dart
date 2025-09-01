@@ -84,6 +84,7 @@ class UIHelpers {
         style: theme.textTheme.bodyMedium?.copyWith(
           fontSize: 12,
           fontWeight: FontWeight.bold,
+          color: const Color(0xFFFFD700), // Viking yellow
         ),
       ),
     );

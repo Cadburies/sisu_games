@@ -14,10 +14,33 @@ class VikingTheme {
   static const Color dialogBackground = Color(0xFF2D1B12);
   static const Color diceBackground = Color(0xFF5D4037);
   static const Color inputBackground = Color(0xFF4E342E);
+  static const Color errorBackground = Color(0xFFB71C1C);
+  static const Color successBackground = Color(0xFF388E3C);
 
   // Accent colors
   static const Color borderAccent = Color(0xFFB71C1C);
   static const Color selectedAccent = Color(0xFFFBC02D);
+  static const Color disabledAccent = Color(0xFF757575);
+
+  // Overlay colors
+  static const Color weatheredWoodOverlay = Color(0x33432416);
+  static const Color selectedOverlay = Color(0x33FFD700);
+  static const Color disabledOverlay = Color(0x66000000);
+
+  // Text styles with shadows for better readability
+  static TextStyle get _baseTextStyle => const TextStyle(
+    fontFamily: 'RuneFont',
+    color: bodyText,
+    shadows: [
+      Shadow(color: Colors.black54, offset: Offset(1, 1), blurRadius: 2),
+    ],
+  );
+
+  static TextStyle get titleStyle => _baseTextStyle.copyWith(
+    fontSize: 24,
+    fontWeight: FontWeight.bold,
+    color: titleText,
+  );
 
   // Theme configuration
   static ThemeData get theme => ThemeData(
@@ -25,57 +48,67 @@ class VikingTheme {
     fontFamily: 'RuneFont',
     scaffoldBackgroundColor: Colors.transparent,
     cardColor: cardBackground,
-    dialogBackgroundColor: dialogBackground,
 
     // Text themes
-    textTheme: const TextTheme(
-      headlineMedium: TextStyle(
+    textTheme: TextTheme(
+      headlineMedium: _baseTextStyle.copyWith(
         color: titleText,
         fontSize: 24,
         fontWeight: FontWeight.bold,
-        fontFamily: 'RuneFont',
       ),
-      titleLarge: TextStyle(
-        color: bodyText,
+      titleLarge: _baseTextStyle.copyWith(
         fontSize: 20,
         fontWeight: FontWeight.bold,
       ),
-      titleMedium: TextStyle(
-        color: bodyText,
+      titleMedium: _baseTextStyle.copyWith(
         fontSize: 18,
         fontWeight: FontWeight.bold,
       ),
-      bodyLarge: TextStyle(color: bodyText, fontSize: 16),
-      labelLarge: TextStyle(
+      bodyLarge: _baseTextStyle.copyWith(fontSize: 16),
+      labelLarge: _baseTextStyle.copyWith(
         color: buttonText,
         fontSize: 16,
         fontWeight: FontWeight.bold,
       ),
     ),
 
-    // Button themes
+    // Button themes - using modern ButtonStyle
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
-        backgroundColor: buttonBackground,
         foregroundColor: buttonText,
+        backgroundColor: buttonBackground,
+        disabledForegroundColor: buttonText.withOpacity(0.5),
+        disabledBackgroundColor: buttonBackground.withOpacity(0.5),
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-        textStyle: const TextStyle(
+        textStyle: _baseTextStyle.copyWith(
           fontWeight: FontWeight.bold,
-          fontFamily: 'RuneFont',
+          fontSize: 16,
         ),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-      ),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8),
+          side: const BorderSide(color: accentYellow, width: 2),
+        ),
+      ).copyWith(overlayColor: const MaterialStatePropertyAll(selectedOverlay)),
     ),
 
     // Input decoration theme
     inputDecorationTheme: InputDecorationTheme(
-      fillColor: inputBackground,
       filled: true,
-      labelStyle: const TextStyle(color: accentYellow),
+      fillColor: inputBackground,
+      labelStyle: _baseTextStyle.copyWith(color: accentYellow),
+      hintStyle: _baseTextStyle.copyWith(color: bodyText.withOpacity(0.5)),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(8),
         borderSide: const BorderSide(color: accentYellow, width: 2),
       ),
-    ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(8),
+        borderSide: const BorderSide(color: accentYellow, width: 2),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(8),
+        borderSide: const BorderSide(color: accentYellow, width: 3),
+      ),
+    ), dialogTheme: DialogThemeData(backgroundColor: dialogBackground),
   );
 }
